@@ -25,7 +25,12 @@ public class TemplatingService {
     private HttpClient httpClient;
     private String tokenBearer;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private static final String ACCEPT_HEADER = "Accept";
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String CONTENT_TYPE_HEADER = "Content-Type";
+    private static final String BEARER_HEADER = "Bearer ";
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * For Testing purposes
@@ -67,16 +72,12 @@ public class TemplatingService {
 
         var request = buildHttpRequestHeader(
                 templatingBaseUrl + "/template/" + templateId + "/example",
-                Map.of("Accept", mediaType.getString(),
-                        "Authorization", "Bearer " + tokenBearer),
+                Map.of(ACCEPT_HEADER, mediaType.getString(),
+                        AUTHORIZATION_HEADER, BEARER_HEADER + tokenBearer),
                 RequestMethod.GET
         );
 
-        try {
-            return httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray()).body();
-        } catch (IOException | InterruptedException e) {
-            throw new TemplatingServiceException("Error while trying to access service", e);
-        }
+        return makeRequest(request, HttpResponse.BodyHandlers.ofByteArray()).body();
     }
 
     /**
@@ -86,15 +87,11 @@ public class TemplatingService {
 
         var request = buildHttpRequestHeader(
                 templatingBaseUrl + "/templates/",
-                Map.of("Authorization", "Bearer " + tokenBearer),
+                Map.of(AUTHORIZATION_HEADER, BEARER_HEADER + tokenBearer),
                 RequestMethod.GET
         );
 
-        try {
-            return httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
-        } catch (IOException | InterruptedException e) {
-            throw new TemplatingServiceException("Error while trying to access service", e);
-        }
+        return makeRequest(request, HttpResponse.BodyHandlers.ofString()).body();
     }
 
     /**
@@ -109,23 +106,22 @@ public class TemplatingService {
 
         var request = buildHttpRequestHeader(
                 templatingBaseUrl + "/template/" + templateId + "/compose",
-                Map.of("Accept", mediaType.getString(),
-                        "Authorization", "Bearer " + tokenBearer,
-                        "Content-Type", "application/json"),
+                Map.of(ACCEPT_HEADER, mediaType.getString(),
+                        AUTHORIZATION_HEADER, BEARER_HEADER + tokenBearer,
+                        CONTENT_TYPE_HEADER, "application/json"),
                 RequestMethod.POST,
                 schema
         );
 
-        try {
-            return httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray()).body();
-        } catch (IOException | InterruptedException e) {
-            throw new TemplatingServiceException("Error while trying to access service", e);
-        }
+        return makeRequest(request, HttpResponse.BodyHandlers.ofByteArray()).body();
     }
 
 
     // Authentication
 
+    /**
+     * Makes request to get Access Token and sets it on local variable
+     */
     private void getAccessToken() {
 
         String tokenRequest =
@@ -137,8 +133,8 @@ public class TemplatingService {
         HttpRequest oAuth2Request = buildHttpRequestHeader(
                 templatingTokenUrl,
                 Map.of(
-                        "Accept", "application/json",
-                        "Content-Type", "application/x-www-form-urlencoded"),
+                        ACCEPT_HEADER, "application/json",
+                        CONTENT_TYPE_HEADER, "application/x-www-form-urlencoded"),
                 RequestMethod.POST,
                 tokenRequest
         );
@@ -155,19 +151,72 @@ public class TemplatingService {
             } else {
                 throw new TemplatingServiceException("Failed to get access token for template service");
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
+            throw new TemplatingServiceException("Error while trying to get auth token for template service", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new TemplatingServiceException("Error while trying to get auth token for template service", e);
         }
     }
 
+    /**
+     * HTTP send request method
+     * <p>
+     * This method exists so that the application can resend the request with a new access token in case of 401
+     *
+     * @param request
+     * @param bodyHandler
+     * @param <T>
+     * @return
+     */
+    private <T> HttpResponse<T> makeRequest(HttpRequest request, HttpResponse.BodyHandler<T> bodyHandler) {
+
+        try {
+
+            var response = httpClient.send(request, bodyHandler);
+
+            if (response.statusCode() == 401) {
+                getAccessToken();
+                response = httpClient.send(request, bodyHandler);
+            }
+
+            return response;
+
+        } catch (IOException e) {
+            throw new TemplatingServiceException("Failed to send or receive request through HTTP client");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new TemplatingServiceException("The thread was interrupted. Failed to access Templating Service");
+        }
+    }
 
     // HTTP Header builders
 
-    private HttpRequest buildHttpRequestHeader(String url, Map<String, String> headerMap, RequestMethod requestMethod) {
+    /**
+     * Override of {@link #buildHttpRequestHeader(String, Map, RequestMethod, String)}
+     *
+     * @param url
+     * @param headerMap
+     * @param requestMethod
+     * @return
+     */
+    private HttpRequest buildHttpRequestHeader(String url, Map<String, String> headerMap, RequestMethod
+            requestMethod) {
         return buildHttpRequestHeader(url, headerMap, requestMethod, null);
     }
 
-    private HttpRequest buildHttpRequestHeader(String url, Map<String, String> headerMap, RequestMethod requestMethod, String bodyContent) {
+    /**
+     * This method exists to make it easier to build the headers of the HTTP request
+     * It also validates the requestMethod
+     *
+     * @param url
+     * @param headerMap
+     * @param requestMethod
+     * @param bodyContent
+     * @return
+     */
+    private HttpRequest buildHttpRequestHeader(String url, Map<String, String> headerMap, RequestMethod
+            requestMethod, String bodyContent) {
         var httpRequest = HttpRequest.newBuilder(URI.create(url));
 
         if (null != headerMap && !headerMap.isEmpty()) {

@@ -35,10 +35,10 @@ class TemplateHelperJavaApplicationTest {
         var json = jsonBuilder(Map.of(
                 "access_token", "abcvdef",
                 "expires_in", "300"));
-        var httpResponseToken = httpResponseBuilder(json);
+        var httpResponseToken = httpResponseBuilder(200, json);
 
         byte[] b = byteArrayBuilder(20);
-        var httpResponseByteArray = httpResponseBuilder(b);
+        var httpResponseByteArray = httpResponseBuilder(200, b);
 
         when(httpClient.send(any(), any()))
                 .thenReturn(httpResponseToken, httpResponseByteArray);
@@ -60,14 +60,14 @@ class TemplateHelperJavaApplicationTest {
         var json = jsonBuilder(Map.of(
                 "access_token", "abcvdef",
                 "expires_in", "300"));
-        var httpResponseToken = httpResponseBuilder(json);
+        var httpResponseToken = httpResponseBuilder(200, json);
 
         json = jsonBuilder(Map.of(
                 "template_schema", "value",
                 "field1", "value1",
                 "field2", "value2"));
 
-        var httpResponseString = httpResponseBuilder(json);
+        var httpResponseString = httpResponseBuilder(200, json);
 
         when(httpClient.send(any(), any()))
                 .thenReturn(httpResponseToken, httpResponseString);
@@ -88,10 +88,10 @@ class TemplateHelperJavaApplicationTest {
         var json = jsonBuilder(Map.of(
                 "access_token", "abcvdef",
                 "expires_in", "300"));
-        var httpResponseToken = httpResponseBuilder(json);
+        var httpResponseToken = httpResponseBuilder(200, json);
 
         byte[] b = byteArrayBuilder(30);
-        var httpResponseByteArray = httpResponseBuilder(b);
+        var httpResponseByteArray = httpResponseBuilder(200, b);
 
         when(httpClient.send(any(), any()))
                 .thenReturn(httpResponseToken, httpResponseByteArray);
@@ -132,6 +132,43 @@ class TemplateHelperJavaApplicationTest {
         assertThat(exceptionThrown.getMessage(), is("Failed to get access token for template service"));
     }
 
+    @Test
+    void getTemplateExample_TEXT_HTML_getNewAccessToken() throws IOException, InterruptedException {
+        // Given
+        var json = jsonBuilder(Map.of(
+                "access_token", "abcvdef",
+                "expires_in", "300"));
+        var httpResponseToken = httpResponseBuilder(200, json);
+
+        var httpResponse_401 = httpResponseBuilder(401, null);
+
+        var json_new_token = jsonBuilder(Map.of(
+                "access_token", "poiuygdsd",
+                "expires_in", "300"));
+        var httpResponseToken_new_token = httpResponseBuilder(200, json_new_token);
+
+        byte[] b = byteArrayBuilder(20);
+        var httpResponseByteArray = httpResponseBuilder(200, b);
+
+
+
+        // When
+        when(httpClient.send(any(), any()))
+                .thenReturn(httpResponseToken, httpResponse_401, httpResponseToken_new_token, httpResponseByteArray);
+
+        // Do request
+        var templatingService = new TemplatingService(httpClient,
+                "http://localhost.com",
+                "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
+                "template-client-id",
+                "this-is-secret");
+
+        var response = templatingService.getTemplateExample("template-id", MediaType.TEXT_HTML);
+
+        assertThat(response, notNullValue());
+        assertThat(response.length, is(20));
+    }
+
     // helpers
 
     private byte[] byteArrayBuilder(int size) {
@@ -145,12 +182,12 @@ class TemplateHelperJavaApplicationTest {
         return mapper.writeValueAsString(map);
     }
 
-    private HttpResponse httpResponseBuilder(Object body) {
+    private HttpResponse httpResponseBuilder(int status, Object body) {
 
         return new HttpResponse() {
             @Override
             public int statusCode() {
-                return 0;
+                return status;
             }
 
             @Override
