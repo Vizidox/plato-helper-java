@@ -2,13 +2,13 @@ package com.morphotech;
 
 public class BuilderUtils {
 
-    public static TemplatingService CreateBasicTemplatingService(
+    public static PlatoService CreateBasicTemplatingService(
             String baseUrl,
             String tokenUrl,
             String clientId,
             String secret
     ){
-        return new TemplatingService(baseUrl, tokenUrl, clientId, secret);
+        return new PlatoService(baseUrl, tokenUrl, clientId, secret);
     }
 
 }

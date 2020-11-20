@@ -24,9 +24,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class TemplateHelperJavaApplicationTest {
+class PlatoHelperJavaApplicationTest {
 
-    private HttpClient httpClient =
+    private final HttpClient httpClient =
             mock(HttpClient.class);
 
     @Test
@@ -43,7 +43,7 @@ class TemplateHelperJavaApplicationTest {
         when(httpClient.send(any(), any()))
                 .thenReturn(httpResponseToken, httpResponseByteArray);
 
-        var templatingService = new TemplatingService(httpClient,
+        var templatingService = new PlatoService(httpClient,
                 "http://localhost.com",
                 "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
                 "template-client-id",
@@ -72,7 +72,7 @@ class TemplateHelperJavaApplicationTest {
         when(httpClient.send(any(), any()))
                 .thenReturn(httpResponseToken, httpResponseString);
 
-        var templatingService = new TemplatingService(httpClient,
+        var templatingService = new PlatoService(httpClient,
                 "http://localhost.com",
                 "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
                 "template-client-id",
@@ -96,7 +96,7 @@ class TemplateHelperJavaApplicationTest {
         when(httpClient.send(any(), any()))
                 .thenReturn(httpResponseToken, httpResponseByteArray);
 
-        var templatingService = new TemplatingService(httpClient,
+        var templatingService = new PlatoService(httpClient,
                 "http://localhost.com",
                 "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
                 "template-client-id",
@@ -122,7 +122,7 @@ class TemplateHelperJavaApplicationTest {
                 .thenReturn(null);
 
         var exceptionThrown = assertThrows(TemplatingServiceException.class, () -> {
-            new TemplatingService(httpClient,
+            new PlatoService(httpClient,
                     "http://localhost.com",
                     "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
                     "template-client-id",
@@ -157,7 +157,7 @@ class TemplateHelperJavaApplicationTest {
                 .thenReturn(httpResponseToken, httpResponse_401, httpResponseToken_new_token, httpResponseByteArray);
 
         // Do request
-        var templatingService = new TemplatingService(httpClient,
+        var templatingService = new PlatoService(httpClient,
                 "http://localhost.com",
                 "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
                 "template-client-id",

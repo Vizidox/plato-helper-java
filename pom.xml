@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.morphotech</groupId>
-    <artifactId>templating-helper-java</artifactId>
+    <artifactId>plato-helper-java</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>template-helper-java</name>
-    <description>Java Helper to easily access the functionalities of the Templating Service by Morphotech</description>
+    <name>plato-helper-java</name>
+    <description>Java Helper to easily access the functionalities of the Plato Service by Morphotech</description>
 
     <properties>
         <java.version>11</java.version>

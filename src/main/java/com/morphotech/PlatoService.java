@@ -13,15 +13,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Map;
 
-public class TemplatingService {
+public class PlatoService {
 
-    private final String templatingBaseUrl;
+    private final String baseUrl;
 
-    private final String templatingTokenUrl;
+    private final String tokenUrl;
 
-    private final String templatingClientId;
+    private final String clientId;
 
-    private final String templatingSecret;
+    private final String secret;
 
     private HttpClient httpClient;
     private String tokenBearer;
@@ -36,21 +36,21 @@ public class TemplatingService {
     /**
      * For Testing purposes
      */
-    public TemplatingService(HttpClient httpClient, String templatingBaseUrl, String templatingTokenUrl, String templatingClientId, String templatingSecret) {
-        this.templatingBaseUrl = templatingBaseUrl;
-        this.templatingTokenUrl = templatingTokenUrl;
-        this.templatingClientId = templatingClientId;
-        this.templatingSecret = templatingSecret;
+    public PlatoService(HttpClient httpClient, String baseUrl, String tokenUrl, String clientId, String secret) {
+        this.baseUrl = baseUrl;
+        this.tokenUrl = tokenUrl;
+        this.clientId = clientId;
+        this.secret = secret;
 
         this.httpClient = httpClient;
         getAccessToken();
     }
 
-    public TemplatingService(String templatingBaseUrl, String templatingTokenUrl, String templatingClientId, String templatingSecret) {
-        this.templatingBaseUrl = templatingBaseUrl;
-        this.templatingTokenUrl = templatingTokenUrl;
-        this.templatingClientId = templatingClientId;
-        this.templatingSecret = templatingSecret;
+    public PlatoService(String baseUrl, String tokenUrl, String clientId, String secret) {
+        this.baseUrl = baseUrl;
+        this.tokenUrl = tokenUrl;
+        this.clientId = clientId;
+        this.secret = secret;
     }
 
     private void setupHttpClient() {
@@ -72,7 +72,7 @@ public class TemplatingService {
     public byte[] getTemplateExample(String templateId, MediaType mediaType) throws WebServiceException {
 
         var request = buildHttpRequestHeader(
-                templatingBaseUrl + "/template/" + templateId + "/example",
+                baseUrl + "/template/" + templateId + "/example",
                 Map.of(ACCEPT_HEADER, mediaType.getString(),
                         AUTHORIZATION_HEADER, BEARER_HEADER + tokenBearer),
                 RequestMethod.GET
@@ -87,7 +87,7 @@ public class TemplatingService {
     public String getAllTemplates() throws WebServiceException {
 
         var request = buildHttpRequestHeader(
-                templatingBaseUrl + "/templates/",
+                baseUrl + "/templates/",
                 Map.of(AUTHORIZATION_HEADER, BEARER_HEADER + tokenBearer),
                 RequestMethod.GET
         );
@@ -106,7 +106,7 @@ public class TemplatingService {
     public byte[] composeTemplateById(String templateId, MediaType mediaType, String schema) throws WebServiceException {
 
         var request = buildHttpRequestHeader(
-                templatingBaseUrl + "/template/" + templateId + "/compose",
+                baseUrl + "/template/" + templateId + "/compose",
                 Map.of(ACCEPT_HEADER, mediaType.getString(),
                         AUTHORIZATION_HEADER, BEARER_HEADER + tokenBearer,
                         CONTENT_TYPE_HEADER, "application/json"),
@@ -126,13 +126,13 @@ public class TemplatingService {
     private void getAccessToken() {
 
         String tokenRequest =
-                "client_id=" + templatingClientId
-                        + "&client_secret=" + templatingSecret
+                "client_id=" + clientId
+                        + "&client_secret=" + secret
                         + "&grant_type=" + "client_credentials"
                         + "&scope=" + "content-provider-scope";
 
         HttpRequest oAuth2Request = buildHttpRequestHeader(
-                templatingTokenUrl,
+                tokenUrl,
                 Map.of(
                         ACCEPT_HEADER, "application/json",
                         CONTENT_TYPE_HEADER, "application/x-www-form-urlencoded"),
@@ -182,7 +182,7 @@ public class TemplatingService {
                 response = httpClient.send(request, bodyHandler);
 
                 if (response.statusCode() != 200) {
-                    throw new WebServiceException("Failed to access File Service");
+                    throw new WebServiceException("Failed to access Plato Service");
                 }
             }
 
@@ -192,7 +192,7 @@ public class TemplatingService {
             throw new TemplatingServiceException("Failed to send or receive request through HTTP client");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new TemplatingServiceException("The thread was interrupted. Failed to access Templating Service");
+            throw new TemplatingServiceException("The thread was interrupted. Failed to access Plato Service");
         }
     }
 

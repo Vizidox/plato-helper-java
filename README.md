@@ -4,19 +4,19 @@ This project was created to offer an easier way to use the templating service fr
  in other Java projects. 
 
 
-# Templating Service Helper (Java)
+# Plato Service Helper (Java)
 
 ## Maven
 
 ```xml
 <properties>
-    <templating-service-helper.version>1.0.0</templating-service-helper.version>
+    <plato-service-helper.version>1.0.0</plato-service-helper.version>
 </properties>
 ...
 <dependency>
     <groupId>com.morphotech</groupId>
-    <artifactId>templating-helper-java</artifactId>
-    <version>${templating-service-helper.version}</version>
+    <artifactId>plato-helper-java</artifactId>
+    <version>${plato-service-helper.version}</version>
 </dependency>
 ```
 
@@ -25,22 +25,16 @@ This project was created to offer an easier way to use the templating service fr
 #### Recommended creating a service (or similar)
 
 ```java
-@Value("${templating-service.base-url}")
-private String templatingBaseUrl;
+@Configuration
+public class PlatoConfig {
 
-@Value("${templating-service.token-url}")
-private String templatingTokenUrl;
-
-@Value("${templating-service.credentials.client-id}")
-private String templatingClientId;
-
-@Value("${templating-service.credentials.secret}")
-private String templatingSecret;
-
-...
-
-@bean
-public TemplatingService TemplatingService(){
-    return new TemplatingService(templatingBaseUrl, templatingTokenUrl, templatingClientId, templatingSecret);
+    @Bean
+    public PlatoService platoService(
+        @Value("${plato-service.base-url}") String baseUrl,
+        @Value("${plato-service.token-url}") String tokenUrl,
+        @Value("${plato-service.credentials.client-id}") String clientId,
+        @Value("${plato-service.credentials.secret}") String secret) {
+        return new PlatoService(baseUrl, tokenUrl, clientId, secret);
+    }
 }
 ```
