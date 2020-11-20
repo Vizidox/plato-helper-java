@@ -30,7 +30,7 @@ class TemplateHelperJavaApplicationTest {
             mock(HttpClient.class);
 
     @Test
-    void getTemplateExample_TEXT_HTML() throws IOException, InterruptedException {
+    void getTemplateExample_TEXT_HTML() throws Exception {
 
         var json = jsonBuilder(Map.of(
                 "access_token", "abcvdef",
@@ -56,7 +56,7 @@ class TemplateHelperJavaApplicationTest {
     }
 
     @Test
-    void getAllTemplates() throws IOException, InterruptedException {
+    void getAllTemplates() throws Exception {
         var json = jsonBuilder(Map.of(
                 "access_token", "abcvdef",
                 "expires_in", "300"));
@@ -84,7 +84,7 @@ class TemplateHelperJavaApplicationTest {
     }
 
     @Test
-    void composeTemplatingFile() throws IOException, InterruptedException {
+    void composeTemplatingFile() throws Exception {
         var json = jsonBuilder(Map.of(
                 "access_token", "abcvdef",
                 "expires_in", "300"));
@@ -133,7 +133,7 @@ class TemplateHelperJavaApplicationTest {
     }
 
     @Test
-    void getTemplateExample_TEXT_HTML_getNewAccessToken() throws IOException, InterruptedException {
+    void getTemplateExample_TEXT_HTML_getNewAccessToken() throws Exception {
         // Given
         var json = jsonBuilder(Map.of(
                 "access_token", "abcvdef",

@@ -4,6 +4,7 @@ package com.morphotech;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.morphotech.exception.TemplatingServiceException;
+import com.morphotech.exception.WebServiceException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -50,13 +51,13 @@ public class TemplatingService {
         this.templatingTokenUrl = templatingTokenUrl;
         this.templatingClientId = templatingClientId;
         this.templatingSecret = templatingSecret;
-
-        setup();
     }
 
-    private void setup() {
-        httpClient = HttpClient.newBuilder().build();
-        getAccessToken();
+    private void setupHttpClient() {
+        if (httpClient == null) {
+            httpClient = HttpClient.newBuilder().build();
+            getAccessToken();
+        }
     }
 
     // API
@@ -68,7 +69,7 @@ public class TemplatingService {
      * @param mediaType  a type of {@link MediaType}
      * @return example of file based on template
      */
-    public byte[] getTemplateExample(String templateId, MediaType mediaType) {
+    public byte[] getTemplateExample(String templateId, MediaType mediaType) throws WebServiceException {
 
         var request = buildHttpRequestHeader(
                 templatingBaseUrl + "/template/" + templateId + "/example",
@@ -83,7 +84,7 @@ public class TemplatingService {
     /**
      * @return template information
      */
-    public String getAllTemplates() {
+    public String getAllTemplates() throws WebServiceException {
 
         var request = buildHttpRequestHeader(
                 templatingBaseUrl + "/templates/",
@@ -102,7 +103,7 @@ public class TemplatingService {
      * @param schema     body to compose file with, must be according to the template schema
      * @return composed file
      */
-    public byte[] composeTemplateById(String templateId, MediaType mediaType, String schema) {
+    public byte[] composeTemplateById(String templateId, MediaType mediaType, String schema) throws WebServiceException {
 
         var request = buildHttpRequestHeader(
                 templatingBaseUrl + "/template/" + templateId + "/compose",
@@ -169,15 +170,20 @@ public class TemplatingService {
      * @param <T>
      * @return
      */
-    private <T> HttpResponse<T> makeRequest(HttpRequest request, HttpResponse.BodyHandler<T> bodyHandler) {
+    private <T> HttpResponse<T> makeRequest(HttpRequest request, HttpResponse.BodyHandler<T> bodyHandler) throws WebServiceException {
+        setupHttpClient();
 
         try {
 
             var response = httpClient.send(request, bodyHandler);
 
-            if (response.statusCode() == 401) {
+            if (response.statusCode() != 200) {
                 getAccessToken();
                 response = httpClient.send(request, bodyHandler);
+
+                if (response.statusCode() != 200) {
+                    throw new WebServiceException("Failed to access File Service");
+                }
             }
 
             return response;
