@@ -70,6 +70,7 @@ public class PlatoService {
      * @return example of file based on template
      */
     public byte[] getTemplateExample(String templateId, MediaType mediaType) throws WebServiceException {
+        setupHttpClient();
 
         var request = buildHttpRequestHeader(
                 baseUrl + "/template/" + templateId + "/example",
@@ -85,6 +86,7 @@ public class PlatoService {
      * @return template information
      */
     public String getAllTemplates() throws WebServiceException {
+        setupHttpClient();
 
         var request = buildHttpRequestHeader(
                 baseUrl + "/templates/",
@@ -104,6 +106,7 @@ public class PlatoService {
      * @return composed file
      */
     public byte[] composeTemplateById(String templateId, MediaType mediaType, String schema) throws WebServiceException {
+        setupHttpClient();
 
         var request = buildHttpRequestHeader(
                 baseUrl + "/template/" + templateId + "/compose",
@@ -171,8 +174,6 @@ public class PlatoService {
      * @return
      */
     private <T> HttpResponse<T> makeRequest(HttpRequest request, HttpResponse.BodyHandler<T> bodyHandler) throws WebServiceException {
-        setupHttpClient();
-
         try {
 
             var response = httpClient.send(request, bodyHandler);
