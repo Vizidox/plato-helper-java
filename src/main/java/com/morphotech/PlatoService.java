@@ -11,25 +11,25 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Map;
 
 public class PlatoService {
 
     private final String baseUrl;
-
     private final String tokenUrl;
-
     private final String clientId;
-
     private final String secret;
-
-    private HttpClient httpClient;
-    private String tokenBearer;
 
     private static final String ACCEPT_HEADER = "Accept";
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String BEARER_HEADER = "Bearer ";
+    private static final Integer DEFAULT_REQUEST_TIMEOUT = 15;
+
+    private HttpClient httpClient;
+    private String tokenBearer;
+    private int requestTimeOut = DEFAULT_REQUEST_TIMEOUT;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -53,9 +53,19 @@ public class PlatoService {
         this.secret = secret;
     }
 
+    public PlatoService(String baseUrl, String tokenUrl, String clientId, String secret, int requestTimeout) {
+        this.baseUrl = baseUrl;
+        this.tokenUrl = tokenUrl;
+        this.clientId = clientId;
+        this.secret = secret;
+        this.requestTimeOut = requestTimeout;
+    }
+
     private void setupHttpClient() {
         if (httpClient == null) {
-            httpClient = HttpClient.newBuilder().build();
+            httpClient = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(requestTimeOut))
+                    .build();
             getAccessToken();
         }
     }
