@@ -20,10 +20,12 @@ public class PlatoService {
     private final String tokenUrl;
     private final String clientId;
     private final String secret;
+    private final String scope;
 
     private static final String ACCEPT_HEADER = "Accept";
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
+    private static final String CONTENT_APPLICATION_JSON = "application/json";
     private static final String BEARER_HEADER = "Bearer ";
     private static final Integer DEFAULT_REQUEST_TIMEOUT = 15;
 
@@ -36,28 +38,31 @@ public class PlatoService {
     /**
      * For Testing purposes
      */
-    public PlatoService(HttpClient httpClient, String baseUrl, String tokenUrl, String clientId, String secret) {
+    public PlatoService(HttpClient httpClient, String baseUrl, String tokenUrl, String clientId, String secret, String scope) {
         this.baseUrl = baseUrl;
         this.tokenUrl = tokenUrl;
         this.clientId = clientId;
         this.secret = secret;
+        this.scope = scope;
 
         this.httpClient = httpClient;
         getAccessToken();
     }
 
-    public PlatoService(String baseUrl, String tokenUrl, String clientId, String secret) {
+    public PlatoService(String baseUrl, String tokenUrl, String clientId, String secret, String scope) {
         this.baseUrl = baseUrl;
         this.tokenUrl = tokenUrl;
         this.clientId = clientId;
         this.secret = secret;
+        this.scope = scope;
     }
 
-    public PlatoService(String baseUrl, String tokenUrl, String clientId, String secret, int requestTimeout) {
+    public PlatoService(String baseUrl, String tokenUrl, String clientId, String secret, String scope, int requestTimeout) {
         this.baseUrl = baseUrl;
         this.tokenUrl = tokenUrl;
         this.clientId = clientId;
         this.secret = secret;
+        this.scope = scope;
         this.requestTimeOut = requestTimeout;
     }
 
@@ -122,7 +127,7 @@ public class PlatoService {
                 baseUrl + "/template/" + templateId + "/compose",
                 Map.of(ACCEPT_HEADER, mediaType.getString(),
                         AUTHORIZATION_HEADER, BEARER_HEADER + tokenBearer,
-                        CONTENT_TYPE_HEADER, "application/json"),
+                        CONTENT_TYPE_HEADER, CONTENT_APPLICATION_JSON),
                 RequestMethod.POST,
                 schema
         );
@@ -142,12 +147,12 @@ public class PlatoService {
                 "client_id=" + clientId
                         + "&client_secret=" + secret
                         + "&grant_type=" + "client_credentials"
-                        + "&scope=" + "content-provider-scope";
+                        + "&scope=" + scope;
 
         HttpRequest oAuth2Request = buildHttpRequestHeader(
                 tokenUrl,
                 Map.of(
-                        ACCEPT_HEADER, "application/json",
+                        ACCEPT_HEADER, CONTENT_APPLICATION_JSON,
                         CONTENT_TYPE_HEADER, "application/x-www-form-urlencoded"),
                 RequestMethod.POST,
                 tokenRequest
@@ -190,11 +195,7 @@ public class PlatoService {
 
             if (response.statusCode() != 200) {
                 getAccessToken();
-                response = httpClient.send(request, bodyHandler);
-
-                if (response.statusCode() != 200) {
-                    throw new WebServiceException("Failed to access Plato Service");
-                }
+                throw new WebServiceException("Failed to access Plato Service with http status: " + response.statusCode());
             }
 
             return response;
@@ -239,6 +240,8 @@ public class PlatoService {
         if (null != headerMap && !headerMap.isEmpty()) {
             headerMap.keySet().forEach(key -> httpRequest.setHeader(key, headerMap.get(key)));
         }
+
+        httpRequest.timeout(Duration.ofSeconds(requestTimeOut));
 
         switch (requestMethod) {
             case GET:
