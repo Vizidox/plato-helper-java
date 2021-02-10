@@ -10,7 +10,7 @@ This project was created to offer an easier way to use the templating service fr
 
 ```xml
 <properties>
-    <plato-service-helper.version>1.0.0</plato-service-helper.version>
+    <plato-service-helper.version>2.0.0</plato-service-helper.version>
 </properties>
 ...
 <dependency>
@@ -30,11 +30,8 @@ public class PlatoConfig {
 
     @Bean
     public PlatoService platoService(
-        @Value("${plato-service.base-url}") String baseUrl,
-        @Value("${plato-service.token-url}") String tokenUrl,
-        @Value("${plato-service.credentials.client-id}") String clientId,
-        @Value("${plato-service.credentials.secret}") String secret) {
-        return new PlatoService(baseUrl, tokenUrl, clientId, secret);
+        @Value("${plato-service.base-url}") String baseUrl) {
+        return new PlatoService(baseUrl);
     }
 }
 ```

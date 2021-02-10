@@ -3,7 +3,6 @@ package com.morphotech;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.morphotech.exception.TemplatingServiceException;
-import com.morphotech.exception.WebServiceException;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLSession;
@@ -33,23 +32,13 @@ class PlatoHelperJavaApplicationTest {
     @Test
     void getTemplateExample_TEXT_HTML() throws Exception {
 
-        var json = jsonBuilder(Map.of(
-                "access_token", "abcvdef",
-                "expires_in", "300"));
-        var httpResponseToken = httpResponseBuilder(200, json);
-
         byte[] b = byteArrayBuilder(20);
         var httpResponseByteArray = httpResponseBuilder(200, b);
 
         when(httpClient.send(any(), any()))
-                .thenReturn(httpResponseToken, httpResponseByteArray);
+                .thenReturn(httpResponseByteArray);
 
-        var templatingService = new PlatoService(httpClient,
-                "http://localhost.com",
-                "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
-                "template-client-id",
-                "this-is-secret",
-                "content-provider-scope");
+        var templatingService = new PlatoService(httpClient, "http://localhost.com");
 
         var response = templatingService.getTemplateExample("template-id", MediaType.TEXT_HTML);
 
@@ -60,11 +49,6 @@ class PlatoHelperJavaApplicationTest {
     @Test
     void getAllTemplates() throws Exception {
         var json = jsonBuilder(Map.of(
-                "access_token", "abcvdef",
-                "expires_in", "300"));
-        var httpResponseToken = httpResponseBuilder(200, json);
-
-        json = jsonBuilder(Map.of(
                 "template_schema", "value",
                 "field1", "value1",
                 "field2", "value2"));
@@ -72,14 +56,9 @@ class PlatoHelperJavaApplicationTest {
         var httpResponseString = httpResponseBuilder(200, json);
 
         when(httpClient.send(any(), any()))
-                .thenReturn(httpResponseToken, httpResponseString);
+                .thenReturn(httpResponseString);
 
-        var templatingService = new PlatoService(httpClient,
-                "http://localhost.com",
-                "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
-                "template-client-id",
-                "this-is-secret",
-                "content-provider-scope");
+        var templatingService = new PlatoService(httpClient, "http://localhost.com");
 
         var response = templatingService.getAllTemplates();
         assertThat(response.contains("template_schema"), is(true));
@@ -88,23 +67,13 @@ class PlatoHelperJavaApplicationTest {
 
     @Test
     void composeTemplatingFile() throws Exception {
-        var json = jsonBuilder(Map.of(
-                "access_token", "abcvdef",
-                "expires_in", "300"));
-        var httpResponseToken = httpResponseBuilder(200, json);
-
         byte[] b = byteArrayBuilder(30);
         var httpResponseByteArray = httpResponseBuilder(200, b);
 
         when(httpClient.send(any(), any()))
-                .thenReturn(httpResponseToken, httpResponseByteArray);
+                .thenReturn(httpResponseByteArray);
 
-        var templatingService = new PlatoService(httpClient,
-                "http://localhost.com",
-                "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
-                "template-client-id",
-                "this-is-secret",
-                "content-provider-scope");
+        var templatingService = new PlatoService(httpClient, "http://localhost.com");
 
 
         var jsonToPost = jsonBuilder(Map.of(
@@ -117,52 +86,6 @@ class PlatoHelperJavaApplicationTest {
 
         assertThat(response, notNullValue());
         assertThat(response.length, is(30));
-    }
-
-    @Test
-    void getAccessTokenNull_throw_exception() throws IOException, InterruptedException {
-
-        when(httpClient.send(any(), any()))
-                .thenReturn(null);
-
-        var exceptionThrown = assertThrows(TemplatingServiceException.class, () -> {
-            new PlatoService(httpClient,
-                    "http://localhost.com",
-                    "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
-                    "template-client-id",
-                    "this-is-secret",
-                    "content-provider-scope");
-        });
-
-        assertThat(exceptionThrown.getMessage(), is("Failed to get access token for template service"));
-    }
-
-    @Test
-    void getTemplateExample_TEXT_HTML_getNewAccessToken() throws Exception {
-        // Given
-        var json = jsonBuilder(Map.of(
-                "access_token", "abcvdef",
-                "expires_in", "300"));
-        var httpResponseToken = httpResponseBuilder(200, json);
-
-        var httpResponse_401 = httpResponseBuilder(401, null);
-
-        // When
-        when(httpClient.send(any(), any()))
-                .thenReturn(httpResponseToken, httpResponse_401, httpResponseToken);
-
-        // Do request
-        var exceptionThrown = assertThrows(WebServiceException.class, () -> {
-            var templatingService= new PlatoService(httpClient,
-                    "http://localhost.com",
-                    "http://localhost.com/auth/realms/micro-keycloak/protocol/openid-connect/token",
-                    "template-client-id",
-                    "this-is-secret",
-                    "content-provider-scope");
-            templatingService.getTemplateExample("template-id", MediaType.TEXT_HTML);
-        });
-
-        assertThat(exceptionThrown.getMessage(), is("Failed to access Plato Service with http status: 401"));
     }
 
     // helpers
