@@ -2,11 +2,9 @@ package com.morphotech;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.morphotech.exception.TemplatingServiceException;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLSession;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
@@ -19,7 +17,6 @@ import java.util.Random;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -145,5 +142,4 @@ class PlatoHelperJavaApplicationTest {
             }
         };
     }
-
 }

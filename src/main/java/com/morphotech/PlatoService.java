@@ -1,6 +1,5 @@
 package com.morphotech;
 
-
 import com.morphotech.exception.TemplatingServiceException;
 import com.morphotech.exception.WebServiceException;
 
@@ -16,13 +15,11 @@ import static java.util.Collections.EMPTY_MAP;
 
 public class PlatoService {
 
-    private final String baseUrl;
-
     private static final String ACCEPT_HEADER = "Accept";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String CONTENT_APPLICATION_JSON = "application/json";
     private static final Integer DEFAULT_REQUEST_TIMEOUT = 15;
-
+    private final String baseUrl;
     private HttpClient httpClient;
     private int requestTimeOut = DEFAULT_REQUEST_TIMEOUT;
 
@@ -50,8 +47,6 @@ public class PlatoService {
                     .build();
         }
     }
-
-    // API
 
     /**
      * Gets example file based on the template
@@ -138,8 +133,6 @@ public class PlatoService {
         }
     }
 
-    // HTTP Header builders
-
     /**
      * Override of {@link #buildHttpRequestHeader(String, Map, RequestMethod, String)}
      *
@@ -181,5 +174,4 @@ public class PlatoService {
                 throw new TemplatingServiceException("HTTP Request method not recognized: " + requestMethod);
         }
     }
-
 }
