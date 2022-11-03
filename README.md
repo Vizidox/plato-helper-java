@@ -10,7 +10,7 @@ This project was created to offer an easier way to use the templating service fr
 
 ```xml
 <properties>
-    <plato-service-helper.version>2.0.0</plato-service-helper.version>
+    <plato-service-helper.version>2.0.1</plato-service-helper.version>
 </properties>
 ...
 <dependency>
